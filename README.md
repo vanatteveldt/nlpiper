@@ -1,6 +1,6 @@
 # R bindings for nlpipe
 
-Simple R bindings to connect to a NLPipe server (see http:://github.com/vanatteveldt/nlpipe).
+Simple R bindings to connect to a NLPipe server (see http://github.com/vanatteveldt/nlpipe).
 
 ```{r}
 > devtools::install_github("vanatteveldt/nlpiper")
