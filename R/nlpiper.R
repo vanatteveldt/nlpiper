@@ -50,7 +50,7 @@ status <- function(module, ids, server=getOption("nlpiper.server", default="http
 result <- function(module, ids, server=getOption("nlpiper.server", default="http://localhost:5001"), format=NULL) {
   results = character(length=length(ids))
   for (i in seq_along(ids)) {
-    url = paste(server, "/api/modules/", module, "/", id, sep = "")
+    url = paste(server, "/api/modules/", module, "/", ids[i], sep = "")
     if (!is.null(format)) url = paste(url, "?format=", format, sep = "")
     message("GET ", url)
     res = httr::GET(url)
