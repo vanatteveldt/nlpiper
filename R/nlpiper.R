@@ -8,7 +8,7 @@
 #' @export
 process_async <- function(module, texts, server=getOption("nlpiper.server", default="http://localhost:5001")) {
   url = paste(server, "/api/modules/", module, "/", sep = "")
-  message("POST ", url)
+  if (getOption("nlpiper.verbose", default=F)) message("POST ", url)
   result = numeric(length = length(texts))
   for (i in seq_along(texts)) {
     res = httr::POST(url, body=texts[i])
@@ -30,7 +30,7 @@ status <- function(module, ids, server=getOption("nlpiper.server", default="http
   result = character(length = length(ids))
   for (i in seq_along(ids)) {
     url = paste(server, "/api/modules/", module, "/", ids[i], sep = "")
-    message("HEAD ", url)
+    if (getOption("nlpiper.verbose", default=F))  message("HEAD ", url)
     res = httr::HEAD(url)
     if (!"status" %in% names(res$headers)) stop("Error on HEAD ", url, ":", res$status_code, " ", res$content)
     result[i] = res$headers$status
@@ -52,7 +52,7 @@ result <- function(module, ids, server=getOption("nlpiper.server", default="http
   for (i in seq_along(ids)) {
     url = paste(server, "/api/modules/", module, "/", ids[i], sep = "")
     if (!is.null(format)) url = paste(url, "?format=", format, sep = "")
-    message("GET ", url)
+    if (getOption("nlpiper.verbose", default=F)) message("GET ", url)
     res = httr::GET(url)
     if (res$status_code != 200) {
       warning("Error on GET ", url, ":", res$status_code, " ", res$content)
