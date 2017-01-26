@@ -3,19 +3,17 @@
 #' @param module Name of the NLPipe module to call (e.g. test_upper, corenlp_lemmatize)
 #' @param texts Texts to process
 #' @param server NLPipe server or local folder (default: localhost:5001)
+#' @param ids optional explicit ids
 #'
 #' @return IDs of the tasks
 #' @export
-process_async <- function(module, texts, server=getOption("nlpiper.server", default="http://localhost:5001")) {
-  url = paste(server, "/api/modules/", module, "/", sep = "")
+process_async <- function(module, texts, server=getOption("nlpiper.server", default="http://localhost:5001"), ids=NULL) {
+  url = sprintf("%s/api/modules/%s/bulk/process", server, module)
   if (getOption("nlpiper.verbose", default=F)) message("POST ", url)
-  result = numeric(length = length(texts))
-  for (i in seq_along(texts)) {
-    res = httr::POST(url, body=texts[i])
-    if (res$status_code != 202) stop("Error on POST ", url,":", res$content)
-    result[i] = res$headers$id
-  }
-  return(result)
+  body = if (is.null(ids)) jsonlite::toJSON(texts) else jsonlite::toJSON(setNames(as.list(texts), ids), auto_unbox = T)
+  res = httr::POST(url, body=body, httr::content_type_json())
+  if (floor(res$status_code/100) != 2) stop("Error on POST ", url,":", res$content)
+  jsonlite::fromJSON(httr::content(res, as="text"))
 }
 
 #' Check NLPipe processing status
@@ -27,15 +25,13 @@ process_async <- function(module, texts, server=getOption("nlpiper.server", defa
 #' @return A string for each task indicating processing status
 #' @export
 status <- function(module, ids, server=getOption("nlpiper.server", default="http://localhost:5001")) {
-  result = character(length = length(ids))
-  for (i in seq_along(ids)) {
-    url = paste(server, "/api/modules/", module, "/", ids[i], sep = "")
-    if (getOption("nlpiper.verbose", default=F))  message("HEAD ", url)
-    res = httr::HEAD(url)
-    if (!"status" %in% names(res$headers)) stop("Error on HEAD ", url, ":", res$status_code, " ", res$content)
-    result[i] = res$headers$status
-  }
-  return(result)
+  url = sprintf("%s/api/modules/%s/bulk/status", server, module)
+  if (getOption("nlpiper.verbose", default=F)) message("POST ", url)
+  body = jsonlite::toJSON(ids)
+  res = httr::POST(url, body=body, httr::content_type_json())
+  if (floor(res$status_code/100) != 2) stop("Error on POST ", url,":", res$content)
+  status = jsonlite::fromJSON(httr::content(res, as="text"))
+  sapply(ids, function(x) status[[as.character(x)]])
 }
 
 #' Fetch NLPipe results
@@ -48,20 +44,14 @@ status <- function(module, ids, server=getOption("nlpiper.server", default="http
 #' @return The processed text(s), or NA if status was not 'DONE'. If format is csv, return a single data frame with all result lines
 #' @export
 result <- function(module, ids, server=getOption("nlpiper.server", default="http://localhost:5001"), format=NULL) {
-  results = character(length=length(ids))
-  for (i in seq_along(ids)) {
-    url = paste(server, "/api/modules/", module, "/", ids[i], sep = "")
-    if (!is.null(format)) url = paste(url, "?format=", format, sep = "")
-    if (getOption("nlpiper.verbose", default=F)) message("GET ", url)
-    res = httr::GET(url)
-    if (res$status_code != 200) {
-      warning("Error on GET ", url, ":", res$status_code, " ", res$content)
-      results[i] = NA
-    } else {
-      results[i] = httr::content(res, "text")
-    }
-  }
-
+  url = sprintf("%s/api/modules/%s/bulk/result", server, module)
+  if (!is.null(format)) url=sprintf("%s?format=%s", url, format)
+  if (getOption("nlpiper.verbose", default=F)) message("POST ", url)
+  body = jsonlite::toJSON(ids)
+  res = httr::POST(url, body=body, httr::content_type_json())
+  if (floor(res$status_code/100) != 2) stop("Error on POST ", url,":", res$content)
+  results = jsonlite::fromJSON(httr::content(res, as="text", encoding = "utf-8"))
+  results = sapply(ids, function(x) results[[as.character(x)]])
   # convert csv objects to single df
   if (!is.null(format) && format=="csv") {
     dfs = list()
@@ -69,7 +59,6 @@ result <- function(module, ids, server=getOption("nlpiper.server", default="http
       con = textConnection(results[i])
       result = read.csv(con)
       close(con)
-      result$`.id` = ids[i]
       dfs = c(dfs,list(result))
     }
     results = plyr::rbind.fill(dfs)
@@ -83,11 +72,12 @@ result <- function(module, ids, server=getOption("nlpiper.server", default="http
 #' @param text Text to process
 #' @param server NLPipe server or local folder (default: localhost:5001)
 #' @param format The format to download results as (e.g. csv)
+#' @param ids optinal explicit ids
 #'
 #' @return The processed text
 #' @export
-process <- function(module, text, server=getOption("nlpiper.server", default="http://localhost:5001"), format=NULL) {
-  id = process_async(module, text, server)
+process <- function(module, text, server=getOption("nlpiper.server", default="http://localhost:5001"), format=NULL, ids=NULL) {
+  id = process_async(module, text, server, ids=ids)
   while(T) {
     status = status(module, id, server)
     if (status == "DONE") {
