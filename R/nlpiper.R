@@ -7,9 +7,10 @@
 #'
 #' @return IDs of the tasks
 #' @export
-process_async <- function(module, texts, server=getOption("nlpiper.server", default="http://localhost:5001"), ids=NULL) {
+process_async <- function(module, texts, server=getOption("nlpiper.server", default="http://localhost:5001"), ids=NULL, as_ascii=F) {
   url = sprintf("%s/api/modules/%s/bulk/process", server, module)
   if (getOption("nlpiper.verbose", default=F)) message("POST ", url)
+  if (as_ascii) texts = iconv(texts, to='ASCII//TRANSLIT')
   body = if (is.null(ids)) jsonlite::toJSON(texts) else jsonlite::toJSON(setNames(as.list(texts), ids), auto_unbox = T)
   res = httr::POST(url, body=body, httr::content_type_json())
   if (floor(res$status_code/100) != 2) stop("Error on POST ", url,":", res$content)
@@ -76,8 +77,8 @@ result <- function(module, ids, server=getOption("nlpiper.server", default="http
 #'
 #' @return The processed text
 #' @export
-process <- function(module, text, server=getOption("nlpiper.server", default="http://localhost:5001"), format=NULL, ids=NULL) {
-  id = process_async(module, text, server, ids=ids)
+process <- function(module, text, server=getOption("nlpiper.server", default="http://localhost:5001"), format=NULL, ids=NULL, as_ascii=F) {
+  id = process_async(module, text, server, ids=ids, as_ascii=as_ascii)
   while(T) {
     status = status(module, id, server)
     if (status == "DONE") {
