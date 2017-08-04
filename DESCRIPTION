@@ -9,4 +9,4 @@ Description: Simple R bindings for connecting to a NLPipe server, see github.com
 License: MIT
 LazyData: TRUE
 RoxygenNote: 5.0.1
-Depends: httr
+Depends: httr, plyr

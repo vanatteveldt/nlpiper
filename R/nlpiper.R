@@ -1,3 +1,16 @@
+#' POST a request and decode results
+.post <- function(url, body, token=NULL) {
+  if (getOption("nlpiper.verbose", default=F)) message("POST ", url)
+  token = getOption("nlpiper.token")
+  config = if (!is.null(token)) add_headers(Authorization=paste("Token", token)) else list()
+  res = httr::POST(url, config, body=body, httr::content_type_json())
+  content = httr::content(res, as="text", encoding = "utf-8")
+
+
+  httr::stop_for_status(res, paste("POST", url, ":", content))
+  jsonlite::fromJSON(content)
+}
+
 #' Process a text with NLPipe
 #'
 #' @param module Name of the NLPipe module to call (e.g. test_upper, corenlp_lemmatize)
@@ -9,12 +22,9 @@
 #' @export
 process_async <- function(module, texts, server=getOption("nlpiper.server", default="http://localhost:5001"), ids=NULL, as_ascii=F) {
   url = sprintf("%s/api/modules/%s/bulk/process", server, module)
-  if (getOption("nlpiper.verbose", default=F)) message("POST ", url)
   if (as_ascii) texts = iconv(texts, to='ASCII//TRANSLIT')
   body = if (is.null(ids)) jsonlite::toJSON(texts) else jsonlite::toJSON(setNames(as.list(texts), ids), auto_unbox = T)
-  res = httr::POST(url, body=body, httr::content_type_json())
-  if (floor(res$status_code/100) != 2) stop("Error on POST ", url,":", res$content)
-  jsonlite::fromJSON(httr::content(res, as="text"))
+  .post(url, body)
 }
 
 #' Check NLPipe processing status
@@ -27,11 +37,8 @@ process_async <- function(module, texts, server=getOption("nlpiper.server", defa
 #' @export
 status <- function(module, ids, server=getOption("nlpiper.server", default="http://localhost:5001")) {
   url = sprintf("%s/api/modules/%s/bulk/status", server, module)
-  if (getOption("nlpiper.verbose", default=F)) message("POST ", url)
   body = jsonlite::toJSON(ids)
-  res = httr::POST(url, body=body, httr::content_type_json())
-  if (floor(res$status_code/100) != 2) stop("Error on POST ", url,":", res$content)
-  status = jsonlite::fromJSON(httr::content(res, as="text"))
+  status = .post(url, body)
   sapply(ids, function(x) status[[as.character(x)]])
 }
 
@@ -47,11 +54,8 @@ status <- function(module, ids, server=getOption("nlpiper.server", default="http
 result <- function(module, ids, server=getOption("nlpiper.server", default="http://localhost:5001"), format=NULL) {
   url = sprintf("%s/api/modules/%s/bulk/result", server, module)
   if (!is.null(format)) url=sprintf("%s?format=%s", url, format)
-  if (getOption("nlpiper.verbose", default=F)) message("POST ", url)
   body = jsonlite::toJSON(ids)
-  res = httr::POST(url, body=body, httr::content_type_json())
-  if (floor(res$status_code/100) != 2) stop("Error on POST ", url,":", res$content)
-  results = jsonlite::fromJSON(httr::content(res, as="text", encoding = "utf-8"))
+  results = .post(url, body)
   results = sapply(ids, function(x) results[[as.character(x)]])
   # convert csv objects to single df
   if (!is.null(format) && format=="csv") {
