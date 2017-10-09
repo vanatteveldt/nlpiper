@@ -5,8 +5,11 @@ Version: 0.1
 Date: 2016-10-10
 Author: Wouter van Atteveldt
 Maintainer: Wouter van Atteveldt <wouter@vanatteveldt.com>
-Description: Simple R bindings for connecting to a NLPipe server, see github.com/vanatteveldt/nlpipe and github.com/vanatteveldt/nlpiper
-License: MIT
+Description: Simple R bindings for connecting to a NLPipe server, see github.com/vanatteveldt/nlpipe and github.com/vanatteveldt/nlpiper.
+License: MIT + file LICENCE
 LazyData: TRUE
-RoxygenNote: 5.0.1
-Depends: httr, plyr
+RoxygenNote: 6.0.1
+Imports: 
+  httr, 
+  data.table,
+  jsonlite
