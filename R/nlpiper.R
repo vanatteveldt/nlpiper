@@ -13,6 +13,8 @@
 
 #' Process a text with NLPipe
 #'
+#' For instructions for setting up an NLPipe server, see \url{https://github.com/vanatteveldt/nlpipe}
+#'
 #' @param module Name of the NLPipe module to call (e.g. test_upper, corenlp_lemmatize)
 #' @param texts Texts to process
 #' @param server NLPipe server or local folder (default: localhost:5001)
@@ -23,7 +25,7 @@
 #' @examples
 #' \dontrun{
 #' ## setup corenlp, e.g. run corenlp docker.
-#' ## For instructions see  https://github.com/vanatteveldt/nlpipe
+#' ## For instructions see  <https://github.com/vanatteveldt/nlpipe>
 #'
 #' ## start process
 #' task_id = nlpiper::process_async("corenlp_lemmatize", c("This is an example.", "This as well."))
@@ -52,7 +54,7 @@ process_async <- function(module, texts, server=getOption("nlpiper.server", defa
 #' @examples
 #' \dontrun{
 #' ## setup corenlp, e.g. run corenlp docker.
-#' ## For instructions see  https://github.com/vanatteveldt/nlpipe
+#' ## For instructions see  <https://github.com/vanatteveldt/nlpipe>
 #'
 #' ## start process
 #' task_id = nlpiper::process_async("corenlp_lemmatize", c("This is an example.", "This as well."))
@@ -82,7 +84,7 @@ status <- function(module, ids, server=getOption("nlpiper.server", default="http
 #' @examples
 #' \dontrun{
 #' ## setup corenlp, e.g. run corenlp docker.
-#' ## For instructions see  https://github.com/vanatteveldt/nlpipe
+#' ## For instructions see  <https://github.com/vanatteveldt/nlpipe>
 #'
 #' ## start process
 #' task_id = nlpiper::process_async("corenlp_lemmatize", c("This is an example.", "This as well."))
@@ -116,6 +118,8 @@ result <- function(module, ids, server=getOption("nlpiper.server", default="http
 
 #' Process a text with NLPipe and wait for result
 #'
+#' For instructions for setting up an NLPipe server, see \url{https://github.com/vanatteveldt/nlpipe}
+#'
 #' @param module Name of the NLPipe module to call (e.g. test_upper, corenlp_lemmatize)
 #' @param text Text to process
 #' @param server NLPipe server or local folder (default: localhost:5001)
@@ -127,7 +131,7 @@ result <- function(module, ids, server=getOption("nlpiper.server", default="http
 #' @examples
 #' \dontrun{
 #' ## setup corenlp, e.g. run corenlp docker.
-#' ## For instructions see  https://github.com/vanatteveldt/nlpipe
+#' ## For instructions see  <https://github.com/vanatteveldt/nlpipe>
 #'
 #' nlpiper::process("test_upper", "test")
 #' nlpiper::process("corenlp_lemmatize", "This is an example.", format = 'csv')

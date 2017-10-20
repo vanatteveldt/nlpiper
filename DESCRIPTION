@@ -1,11 +1,12 @@
 Package: nlpiper
 Type: Package
-Title: R Bindings for NLPipe (NLP Processing)
+Title: R Bindings for NLPipe
 Version: 0.1
-Date: 2016-10-10
+Date: 2017-10-20
 Author: Wouter van Atteveldt
 Maintainer: Wouter van Atteveldt <wouter@vanatteveldt.com>
-Description: Simple R bindings for connecting to a NLPipe server, see github.com/vanatteveldt/nlpipe and github.com/vanatteveldt/nlpiper.
+Description: Simple R bindings for connecting to a NLPipe server, enabling advanced NLP processing. 
+  For instruction on how to setup NLPipe, see <https://github.com/vanatteveldt/nlpipe>.
 License: MIT + file LICENCE
 LazyData: TRUE
 RoxygenNote: 6.0.1

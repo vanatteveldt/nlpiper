@@ -23,7 +23,7 @@ Check NLPipe processing status
 \examples{
 \dontrun{
 ## setup corenlp, e.g. run corenlp docker.
-## For instructions see  https://github.com/vanatteveldt/nlpipe
+## For instructions see  <https://github.com/vanatteveldt/nlpipe>
 
 ## start process
 task_id = nlpiper::process_async("corenlp_lemmatize", c("This is an example.", "This as well."))

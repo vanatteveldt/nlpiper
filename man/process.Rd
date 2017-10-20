@@ -24,12 +24,12 @@ process(module, text, server = getOption("nlpiper.server", default =
 The processed text
 }
 \description{
-Process a text with NLPipe and wait for result
+For instructions for setting up an NLPipe server, see \url{https://github.com/vanatteveldt/nlpipe}
 }
 \examples{
 \dontrun{
 ## setup corenlp, e.g. run corenlp docker.
-## For instructions see  https://github.com/vanatteveldt/nlpipe
+## For instructions see  <https://github.com/vanatteveldt/nlpipe>
 
 nlpiper::process("test_upper", "test")
 nlpiper::process("corenlp_lemmatize", "This is an example.", format = 'csv')

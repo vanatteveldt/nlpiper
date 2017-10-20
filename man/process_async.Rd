@@ -22,12 +22,12 @@ process_async(module, texts, server = getOption("nlpiper.server", default =
 IDs of the tasks
 }
 \description{
-Process a text with NLPipe
+For instructions for setting up an NLPipe server, see \url{https://github.com/vanatteveldt/nlpipe}
 }
 \examples{
 \dontrun{
 ## setup corenlp, e.g. run corenlp docker.
-## For instructions see  https://github.com/vanatteveldt/nlpipe
+## For instructions see  <https://github.com/vanatteveldt/nlpipe>
 
 ## start process
 task_id = nlpiper::process_async("corenlp_lemmatize", c("This is an example.", "This as well."))
