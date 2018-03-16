@@ -79,6 +79,7 @@ status <- function(module, ids, server=getOption("nlpiper.server", default="http
 #' @param ids IDs of the task to get results for
 #' @param server NLPipe server or local folder (default: localhost:5001)
 #' @param format The format to download results as (e.g. csv)
+#' @param check_status If TRUE (default), first check status and only retrieve articles that are DONE
 #'
 #' @return The processed text(s), or NA if status was not 'DONE'. If format is csv, return a single data frame with all result lines
 #' @examples
@@ -96,24 +97,42 @@ status <- function(module, ids, server=getOption("nlpiper.server", default="http
 #' nlpiper::result('corenlp_lemmatize', ids = task_id, format = 'csv')
 #' }
 #' @export
-result <- function(module, ids, server=getOption("nlpiper.server", default="http://localhost:5001"), format=NULL) {
+result <- function(module, ids, server=getOption("nlpiper.server", default="http://localhost:5001"), format=NULL, check_status=TRUE) {
+  if (check_status) {
+    message("Checking status of ", length(ids), " results")
+    status = status(module, ids, server=server)
+    not_done = length(status[status != "DONE"])
+    if (not_done > 0) warning("Skipping ", not_done, "/",length(ids)," unfinished documents")
+    ids = ids[status == "DONE"]
+  }
   url = sprintf("%s/api/modules/%s/bulk/result", server, module)
   if (!is.null(format)) url=sprintf("%s?format=%s", url, format)
-  body = jsonlite::toJSON(ids)
-  results = .post(url, body)
-  results = sapply(ids, function(x) results[[as.character(x)]])
-  # convert csv objects to single df
-  if (!is.null(format) && format=="csv") {
-    dfs = vector('list', length(results))
-    for(i in seq_along(results)) if (!is.na(results[i])) {
-      con = textConnection(results[i])
-      result = utils::read.csv(con)
-      close(con)
-      dfs[[i]] = result
-    }
-    results = as.data.frame(data.table::rbindlist(dfs))
+  message("Retrieving ", length(ids), " results from ", url)
+
+  chunks = split(ids, ceiling(seq_along(ids)/1000))
+  result = list()
+  for(i in seq_along(chunks)) {
+    chunk = chunks[[i]]
+    message("  [",i,"/",length(chunks),"] Retrieving ", length(chunk), " results")
+    body = jsonlite::toJSON(chunk)
+    chunk_result = .post(url, body)
+    result = c(result, chunk_result)
   }
-  return(results)
+
+  if (!is.null(format) && format=="csv") {
+    message("Converting results into data table")
+    dfs = vector('list', length(result))
+    for(i in seq_along(result))
+      if (!is.na(result[[i]])) {
+        con = textConnection(result[[i]])
+        df = utils::read.csv(con)
+        close(con)
+        dfs[[i]] = df
+      }
+    data.table::rbindlist(dfs)
+  } else {
+    sapply(ids, function(x) result[[as.character(x)]])
+  }
 }
 
 #' Process a text with NLPipe and wait for result
